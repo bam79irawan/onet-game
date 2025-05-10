@@ -2,85 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Game Onet</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Onet Game</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
-    body { background: #f5f5f5; text-align: center; padding: 20px; }
+    body { background-color: #f8f9fa; padding-top: 30px; }
     .grid { display: grid; grid-template-columns: repeat(8, 60px); gap: 10px; justify-content: center; }
     .tile {
-      width: 60px; height: 60px; display: flex;
-      align-items: center; justify-content: center;
-      font-size: 24px; border-radius: 8px;
+      width: 60px; height: 60px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; border-radius: 10px;
       cursor: pointer; user-select: none;
-      border: 2px solid #ccc; transition: transform 0.1s ease-in-out;
+      border: 2px solid #ccc;
+      transition: transform 0.1s ease-in-out;
     }
-    .tile.selected { border: 3px solid #007bff; transform: scale(1.1); }
+    .tile.selected {
+      border-color: #007bff;
+      transform: scale(1.05);
+    }
+    .tile.hidden {
+      visibility: hidden;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1 class="mb-4">Game Onet</h1>
-    <div id="game" class="grid"></div>
-    <button class="btn btn-primary mt-4" onclick="startGame()">Mulai Ulang</button>
+  <div class="container text-center">
+    <h1 class="mb-3">🎮 Game Onet Warna-Warni</h1>
+    <p id="scoreDisplay" class="fs-5">⏱️ Waktu: 0 detik | ⭐ Skor: 0</p>
+    <div id="game" class="grid mb-4"></div>
+    <button class="btn btn-primary" onclick="startGame()">🔄 Mulai Ulang</button>
   </div>
 
   <script>
     const items = [
-      ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""),
-      ..."0123456789".split(""),
+      ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+      ..."0123456789",
       "🐶", "🐱", "🐸", "🐰", "🐵", "🦊",
       "🍽️", "🧹", "🛏️", "🪑", "🧺", "🧼"
     ];
 
-    let gridSize = 8;
-    let selected = null;
-    let colors = ["#FFB6C1", "#87CEFA", "#90EE90", "#FFD700", "#FFA07A", "#DDA0DD", "#40E0D0", "#FF69B4"];
+    const colors = ["#FFB6C1", "#87CEFA", "#90EE90", "#FFD700", "#FFA07A", "#DDA0DD", "#40E0D0", "#FF69B4"];
+    const gridSize = 8; // 8x8 grid
     let grid = [];
+    let selected = null;
+    let startTime = null;
+    let timerInterval = null;
+    let score = 0;
 
     function startGame() {
       selected = null;
+      score = 0;
+      clearInterval(timerInterval);
+      startTime = Date.now();
+      updateScoreDisplay();
+
       const game = document.getElementById("game");
       game.innerHTML = "";
 
-      let pairCount = (gridSize * gridSize) / 2;
       let pairs = [];
+      const pairCount = (gridSize * gridSize) / 2;
+
       for (let i = 0; i < pairCount; i++) {
-        let item = items[Math.floor(Math.random() * items.length)];
+        const item = items[Math.floor(Math.random() * items.length)];
         pairs.push(item, item);
       }
-      pairs.sort(() => Math.random() - 0.5);
 
-      grid = [];
-      for (let i = 0; i < gridSize * gridSize; i++) {
-        let tile = {
-          id: i,
-          value: pairs[i],
-          color: colors[Math.floor(Math.random() * colors.length)],
-          matched: false
-        };
-        grid.push(tile);
-      }
+      pairs.sort(() => Math.random() - 0.5);
+      grid = pairs.map((val, i) => ({
+        id: i,
+        value: val,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        matched: false
+      }));
 
       renderGrid();
+
+      timerInterval = setInterval(updateScoreDisplay, 1000);
     }
 
     function renderGrid() {
       const game = document.getElementById("game");
       game.innerHTML = "";
-      grid.forEach((tile, index) => {
+      grid.forEach(tile => {
         const div = document.createElement("div");
-        div.className = "tile";
-        if (tile.matched) {
-          div.style.visibility = "hidden";
-        } else {
+        div.className = "tile" + (tile.matched ? " hidden" : "");
+        if (!tile.matched) {
           div.textContent = tile.value;
           div.style.backgroundColor = tile.color;
           if (selected && selected.id === tile.id) {
             div.classList.add("selected");
           }
         }
-
         div.onclick = () => handleSelect(tile);
         game.appendChild(div);
       });
@@ -94,14 +106,32 @@
       } else if (selected.id === tile.id) {
         selected = null;
       } else if (selected.value === tile.value) {
+        tile.matched = true;
         grid[selected.id].matched = true;
-        grid[tile.id].matched = true;
         selected = null;
+        renderGrid();
+        checkGameComplete();
       } else {
         selected = tile;
       }
 
       renderGrid();
+    }
+
+    function checkGameComplete() {
+      if (grid.every(t => t.matched)) {
+        clearInterval(timerInterval);
+        const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+        const levelScore = Math.max(1000 - timeTaken * 10, 100); // Minimum 100
+        score = levelScore;
+        alert(`🎉 Selamat! Kamu menyelesaikan level ini dalam ${timeTaken} detik.\n⭐ Skor kamu: ${levelScore}`);
+        updateScoreDisplay();
+      }
+    }
+
+    function updateScoreDisplay() {
+      const time = Math.floor((Date.now() - startTime) / 1000);
+      document.getElementById("scoreDisplay").innerText = `⏱️ Waktu: ${time} detik | ⭐ Skor: ${score}`;
     }
 
     startGame();
