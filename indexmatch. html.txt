@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Math Puzzle Quest</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .puzzle-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 60px);
+      gap: 10px;
+      justify-content: center;
+    }
+    .puzzle-cell {
+      width: 60px;
+      height: 60px;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    .ability-card {
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="container text-center mt-4">
+  <h1>Math Puzzle Quest</h1>
+  <p>Selesaikan teka-teki matematika dan tingkatkan kemampuanmu!</p>
+
+  <div class="row mb-4">
+    <div class="col">
+      <button class="btn btn-primary" onclick="generatePuzzle()">Buat Teka-Teki Baru</button>
+    </div>
+  </div>
+
+  <div id="puzzle-container" class="puzzle-grid"></div>
+
+  <div class="mt-4">
+    <h3>Peningkatan Kemampuan</h3>
+    <div class="d-flex justify-content-center">
+      <div class="card ability-card" style="width: 10rem;">
+        <div class="card-body">
+          <h5 class="card-title">Akurasi</h5>
+          <p class="card-text">Meningkatkan presisi jawabanmu.</p>
+          <button class="btn btn-success" onclick="upgrade('accuracy')">Upgrade</button>
+        </div>
+      </div>
+      <div class="card ability-card" style="width: 10rem;">
+        <div class="card-body">
+          <h5 class="card-title">Waktu Berpikir</h5>
+          <p class="card-text">Lebih banyak waktu untuk menyelesaikan puzzle.</p>
+          <button class="btn btn-success" onclick="upgrade('time')">Upgrade</button>
+        </div>
+      </div>
+      <div class="card ability-card" style="width: 10rem;">
+        <div class="card-body">
+          <h5 class="card-title">Skill Matematika</h5>
+          <p class="card-text">Membuka operasi baru (x / - +).</p>
+          <button class="btn btn-success" onclick="upgrade('skill')">Upgrade</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let abilities = {
+  accuracy: 1,
+  time: 60,
+  skill: ['+', '-']
+};
+
+function generatePuzzle() {
+  const container = document.getElementById('puzzle-container');
+  container.innerHTML = '';
+  const size = 4;
+  for (let i = 0; i < size * size; i++) {
+    const input = document.createElement('input');
+    input.className = 'form-control puzzle-cell';
+    input.setAttribute('type', 'number');
+    input.setAttribute('placeholder', '?');
+    container.appendChild(input);
+  }
+  alert('Isi kotak dengan angka yang hasil operasinya benar secara baris dan kolom!');
+}
+
+function upgrade(type) {
+  if (type === 'accuracy') {
+    abilities.accuracy += 1;
+    alert('Akurasi meningkat ke level ' + abilities.accuracy);
+  } else if (type === 'time') {
+    abilities.time += 10;
+    alert('Waktu tambahan: ' + abilities.time + ' detik');
+  } else if (type === 'skill') {
+    if (!abilities.skill.includes('*')) {
+      abilities.skill.push('*');
+    } else if (!abilities.skill.includes('/')) {
+      abilities.skill.push('/');
+    } else {
+      alert('Semua operasi sudah dibuka!');
+      return;
+    }
+    alert('Operasi sekarang: ' + abilities.skill.join(', '));
+  }
+}
+</script>
+</body>
+</html>
