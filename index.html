@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Game Onet</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body { background: #f5f5f5; text-align: center; padding: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(8, 60px); gap: 10px; justify-content: center; }
+    .tile {
+      width: 60px; height: 60px; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 24px; border-radius: 8px;
+      cursor: pointer; user-select: none;
+      border: 2px solid #ccc; transition: transform 0.1s ease-in-out;
+    }
+    .tile.selected { border: 3px solid #007bff; transform: scale(1.1); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mb-4">Game Onet</h1>
+    <div id="game" class="grid"></div>
+    <button class="btn btn-primary mt-4" onclick="startGame()">Mulai Ulang</button>
+  </div>
+
+  <script>
+    const items = [
+      ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""),
+      ..."0123456789".split(""),
+      "🐶", "🐱", "🐸", "🐰", "🐵", "🦊",
+      "🍽️", "🧹", "🛏️", "🪑", "🧺", "🧼"
+    ];
+
+    let gridSize = 8;
+    let selected = null;
+    let colors = ["#FFB6C1", "#87CEFA", "#90EE90", "#FFD700", "#FFA07A", "#DDA0DD", "#40E0D0", "#FF69B4"];
+    let grid = [];
+
+    function startGame() {
+      selected = null;
+      const game = document.getElementById("game");
+      game.innerHTML = "";
+
+      let pairCount = (gridSize * gridSize) / 2;
+      let pairs = [];
+      for (let i = 0; i < pairCount; i++) {
+        let item = items[Math.floor(Math.random() * items.length)];
+        pairs.push(item, item);
+      }
+      pairs.sort(() => Math.random() - 0.5);
+
+      grid = [];
+      for (let i = 0; i < gridSize * gridSize; i++) {
+        let tile = {
+          id: i,
+          value: pairs[i],
+          color: colors[Math.floor(Math.random() * colors.length)],
+          matched: false
+        };
+        grid.push(tile);
+      }
+
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const game = document.getElementById("game");
+      game.innerHTML = "";
+      grid.forEach((tile, index) => {
+        const div = document.createElement("div");
+        div.className = "tile";
+        if (tile.matched) {
+          div.style.visibility = "hidden";
+        } else {
+          div.textContent = tile.value;
+          div.style.backgroundColor = tile.color;
+          if (selected && selected.id === tile.id) {
+            div.classList.add("selected");
+          }
+        }
+
+        div.onclick = () => handleSelect(tile);
+        game.appendChild(div);
+      });
+    }
+
+    function handleSelect(tile) {
+      if (tile.matched) return;
+
+      if (!selected) {
+        selected = tile;
+      } else if (selected.id === tile.id) {
+        selected = null;
+      } else if (selected.value === tile.value) {
+        grid[selected.id].matched = true;
+        grid[tile.id].matched = true;
+        selected = null;
+      } else {
+        selected = tile;
+      }
+
+      renderGrid();
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
